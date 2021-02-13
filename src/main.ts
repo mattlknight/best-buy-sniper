@@ -31,7 +31,7 @@ const main = async () => {
       purchaseCompleted = await bestbuy.purchaseProduct();
   
       if (!purchaseCompleted) {
-        const waitTime = random(10000, 30000);
+        const waitTime = random(60000, 180000);
   
         logger.warn(`Purchase not completed, waiting ${waitTime} ms before retrying`);
   
