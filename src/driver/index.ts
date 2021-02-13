@@ -1,4 +1,4 @@
-import { firefox, Browser } from 'playwright';
+import { firefox, Browser, chromium } from 'playwright';
 
 let browser: Browser;
 
@@ -9,7 +9,7 @@ export const createBrowser = async (): Promise<Browser> => {
     defaultViewport: { width: 1920, height: 1080 }
   };
 
-  browser = await firefox.launch(options);
+  browser = await chromium.launch(options);
 
   return browser;
 };
