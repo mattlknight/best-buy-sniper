@@ -186,7 +186,10 @@ export class BestBuy {
 
     logger.info(`Navigating to cart`);
 
-    await page.goto('https://www.bestbuy.com/cart');
+    await page.goto('https://www.bestbuy.com/cart', {
+      waitUntil: 'load',
+      timeout: 5000
+    });
 
     if (retrying && (await this.isCartEmpty())) throw new Error('Cart is empty, aborting attempt');
 
@@ -224,7 +227,7 @@ export class BestBuy {
     await this.clickCheckoutButton();
 
     try {
-      await page.waitForSelector('.cia-guest-content .js-cia-guest-button', { timeout: 10000 });
+      await page.waitForSelector('.cia-guest-content__continue', { timeout: 10000 });
 
       logger.info('Checkout successful, starting order placement');
     } catch (error) {
@@ -232,7 +235,7 @@ export class BestBuy {
       logger.info('Refreshing and trying to checkout again');
 
       await Promise.all([
-        sendDiscordMessage({ message: `Checkout did not went through, trying again`, image: startingCheckoutScreenshotPath }),
+        sendDiscordMessage({ message: `Checkout did not go through, trying again`, image: startingCheckoutScreenshotPath }),
       ]);
 
       await this.checkout(true);
@@ -292,7 +295,7 @@ export class BestBuy {
 
     logger.info('Continuing as guest');
 
-    await page.click('.cia-guest-content .js-cia-guest-button');
+    await page.click('.cia-guest-content__continue');
 
     await page.waitForSelector('.checkout__container .fulfillment');
   }
@@ -356,11 +359,9 @@ export class BestBuy {
       process.exit(2);
     }
 
-    // *** UNCOMMENT THIS SECTION TO ENABLE AUTO-CHECKOUT ***
-
-    // if (!!placeOrderButton) {
-    //   await page.click('.button--place-order button.btn-primary');
-    // }
+    if (placeOrderButton) {
+      await page.click('.button--place-order button.btn-primary');
+    }
 
     await wait(3000);
 
@@ -415,7 +416,7 @@ export class BestBuy {
     await page.type('[id="consolidatedAddresses.ui_address_2.city"]', customerInformation.city);
     await page.selectOption('[id="consolidatedAddresses.ui_address_2.state"]', customerInformation.state);
     await page.type('[id="consolidatedAddresses.ui_address_2.zipcode"]', customerInformation.zipcode);
-    await page.uncheck('[id="save-for-billing-address-ui_address_2"]');
+    await page.check('[id="save-for-billing-address-ui_address_2"]');
 
     logger.info('Shipping information completed');
   }
@@ -433,7 +434,9 @@ export class BestBuy {
   }
 
   private async completePaymentInformation(paymentInformation: PaymentInformation) {
+    await wait(3000);
     const page = await this.getPage();
+    await wait(3000);
 
     logger.info('Filling payment information...');
 
@@ -442,12 +445,25 @@ export class BestBuy {
     await page.selectOption('[name="expiration-month"]', paymentInformation.expirationMonth);
     await page.selectOption('[name="expiration-year"]', paymentInformation.expirationYear);
     await page.type('#credit-card-cvv', paymentInformation.cvv);
-    await page.type('[id="payment.billingAddress.firstName"]', paymentInformation.firstName);
-    await page.type('[id="payment.billingAddress.lastName"]', paymentInformation.lastName);
-    await page.type('[id="payment.billingAddress.street"]', paymentInformation.address);
-    await page.type('[id="payment.billingAddress.city"]', paymentInformation.city);
-    await page.type('[id="payment.billingAddress.state"]', paymentInformation.state);
-    await page.type('[id="payment.billingAddress.zipcode"]', paymentInformation.zipcode);
+    // await page.type('[id="payment.billingAddress.firstName"]', paymentInformation.firstName);
+    // await page.type('[id="payment.billingAddress.lastName"]', paymentInformation.lastName);
+    // await page.type('[id="payment.billingAddress.street"]', paymentInformation.address);
+    // await wait(3000);
+    // await page.waitForSelector('[id="payment.billingAddress.city"]');
+    // await page.type('[id="payment.billingAddress.city"]', paymentInformation.city);
+    // await page.click('[id="payment.billingAddress.city"]');
+    // await page.keyboard.type(paymentInformation.city);
+    // await wait(3000);
+    // await page.click('[id="payment.billingAddress.state"]');
+    // await page.selectOption('[name="state"]', paymentInformation.state)
+    // await page.select('#payment.billingAddress.state', paymentInformation.state)
+    // await page.keyboard.type(paymentInformation.state);
+    // await wait(3000);
+    // await page.waitForSelector('[id="payment.billingAddress.zipcode"]');
+    // await page.type('[id="payment.billingAddress.zipcode"]', paymentInformation.zipcode);
+    // await page.click('[id="payment.billingAddress.zipcode"]');
+    // await page.keyboard.type(paymentInformation.zipcode);
+    // await wait(20000);
 
     logger.info('Payment information completed');
   }
